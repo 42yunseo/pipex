@@ -11,29 +11,24 @@
 /* ************************************************************************** */
 
 #include "pipex.h"
-#define READ 0
-#define WRITE 1
 
-int main(int argc, char *argv[], char *envp[])
+int	main(int argc, char **argv, char **envp)
 {
-	int		fd[2];
-	char	*infile_name;
-	char	*outfile_name;
-	int 	infd;
-	int		outfd;
+	int		pipe_fd[2];
+	int		fd;
 	pid_t	pid;
+	char	**cmd_arg;
+	char	*cmd_path;
 
 	if (argc != 5)
 	{
 		printf("usage : %s infile cmd1 cmd2 outfile\n", argv[0]);
 		return (0);
 	}
-	infile_name = argv[2];
-	outfile_name = argv[4];
-	if (pipe(fd) == -1)
+	if (pipe(pipe_fd) == -1)
 	{
-		perror("pipe"); 
-		exit(1);
+		perror("pipe");
+		return (0);
 	}
 	pid = fork();
 	if (pid == -1)
@@ -41,31 +36,44 @@ int main(int argc, char *argv[], char *envp[])
 		perror("fork");
 		return (0);
 	}
-	// parent process
-	if (pid > 0)
+	if (pid != 0)
 	{
-		close(fd[READ]);
-		if (access(infile_name, R_OK) == -1)
+		close(pipe_fd[0]);
+		fd = open(argv[1], O_RDONLY);
+		if (fd == -1)
 		{
-			perror("access");
-			exit(0);
+			perror(argv[1]);
+			exit(-1);
 		}
-		else
+		dup2(fd, 0);
+		dup2(pipe_fd[1], 1);
+		cmd_arg = cmd_args(argv[2]);
+		cmd_path = path(envp, cmd_arg[0]);
+		if (execve(cmd_path, cmd_arg, envp) == -1)
 		{
-			infd = open(infile_name, O_RDONLY);
-			char *path;
-			char **arg;
-			arg = (char **)malloc(sizeof(char *) * 2);
-			arg[0] = "ls";
-			arg[1] = "-l";
-			execve("usr/bin/ls", arg, envp);
+			perror(cmd_path);
+			exit(-1);
 		}
+		wait(&pid);
 	}
-	else // child process
+	else
 	{
-		close(fd[WRITE]);
-		dup2(1, fd[1]);
-		printf("This is child!\n");
+		close(pipe_fd[1]);
+		fd = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		if (fd == -1)
+		{
+			perror(argv[4]);
+			exit(-1);
+		}
+		dup2(pipe_fd[0], 0);
+		dup2(fd, 1);
+		cmd_arg = cmd_args(argv[3]);
+		cmd_path = path(envp, cmd_arg[0]);
+		if (execve(cmd_path, cmd_arg, envp) == -1)
+		{
+			perror(cmd_path);
+			exit(-1);
+		}
+		return (0);
 	}
-	exit(0);
 }
