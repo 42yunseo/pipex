@@ -12,7 +12,7 @@
 
 NAME = libft.a
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -c
+CFLAGS = -Wall -Wextra -Werror
 AR = ar
 
 SRCS = 	ft_atoi.c \
@@ -60,7 +60,11 @@ SRCS_B = ft_lstnew_bonus.c \
 		ft_lstiter_bonus.c \
 		ft_lstmap_bonus.c
 
+
+
+
 HEADER = libft.h
+
 OBJS = ${SRCS:.c=.o}
 OBJS_B = ${SRCS_B:.c=.o}
 
@@ -70,7 +74,7 @@ ${NAME} : ${OBJS} ${HEADER}
 	${AR} -rc ${NAME} ${OBJS}
 
 %.o : %.c
-	${CC} ${CFLAGS} $^ -o $@
+	${CC} ${CFLAGS} -c $^ -o $@
 
 clean :
 	rm -f ${OBJS} ${OBJS_B}

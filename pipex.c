@@ -74,6 +74,6 @@ int	main(int argc, char **argv, char **envp)
 			perror(cmd_path);
 			exit(-1);
 		}
-		return (0);
 	}
+	return (0);
 }

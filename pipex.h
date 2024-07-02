@@ -13,7 +13,7 @@
 #ifndef PIPEX_H
 # define PIPEX_H
 
-# include "libft/libft.h"
+# include "./Libft/libft_all.h"
 # include <fcntl.h>
 # include <unistd.h>
 # include <stdlib.h>
@@ -23,7 +23,6 @@
 # include <errno.h>
 
 // path.c
-
 char	*find_env_path(char **envp);
 char	*find_cmd_path(char **paths, char *cmd);
 char	*path(char **envp, char *cmd);
