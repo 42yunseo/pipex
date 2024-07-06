@@ -18,7 +18,7 @@ SRCS = pipex.c \
 		path.c \
 		cmd.c
 
-SRCS = pipex_bonus.c \
+SRCS_B = pipex_bonus.c \
 		path_bonus.c \
 		cmd_bonus.c
 
@@ -37,7 +37,7 @@ ${LIBFT} :
 %.o : %.c
 	${CC} ${CFLAGS} $^ -o $@
 
-clean : 
+clean :
 	make clean -sC ${LIBFT_DIR}
 
 fclean : clean

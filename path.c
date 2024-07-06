@@ -55,7 +55,7 @@ char	*find_cmd_path(char **paths, char *cmd)
 	return (NULL);
 }
 
-void	free_paths(char **paths)
+void	free_args(char **paths)
 {
 	int	i;
 
@@ -75,27 +75,8 @@ char	*path(char **envp, char *cmd)
 	env_paths = ft_split(env_path, ':');
 	free(env_path);
 	cmd_path = find_cmd_path(env_paths, cmd);
-	free_paths(env_paths);
+	free_args(env_paths);
 	if (cmd_path != NULL)
 		return (cmd_path);
 	return (NULL);
 }
-
-// int	main(int argc, char **argv, char **envp)
-// {
-// 	char	**cmd_arg;
-// 	char	*cmd_path;
-
-// 	if (argc != 2)
-// 	{
-// 		printf("usage : %s cmd\n", argv[0]);
-// 		return (0);
-// 	}
-// 	cmd_arg = cmd_args(argv[1]);
-// 	cmd_path = path(envp, cmd_arg[0]);
-// 	if (execve(cmd_path, cmd_arg, envp) == -1)
-// 		fprintf(stderr, "command not found : %s\n", cmd_arg[0]);
-// 	free(cmd_path);
-// 	free_paths(cmd_arg);
-// 	return (0);
-// }

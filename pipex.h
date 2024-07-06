@@ -26,7 +26,7 @@
 char	*find_env_path(char **envp);
 char	*find_cmd_path(char **paths, char *cmd);
 char	*path(char **envp, char *cmd);
-void	free_paths(char **paths);
+void	free_args(char **paths);
 
 // cmd.c
 char	**cmd_args(char *arg);
