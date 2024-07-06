@@ -49,13 +49,14 @@ void	exec(int infd, int outfd, char *cmd, char **envp)
 	cmd_path = path(envp, cmd_arg[0]);
 	if (cmd_path == NULL)
 	{
+		//perror("command not found: ");
 		ft_putstr_fd("command not found: ", 2);
 		ft_putendl_fd(cmd, 2);
 		free_args(cmd_arg);
-		exit(EXIT_FAILURE);
+		//ft_printf("%s\n", errno);
+		exit(errno);
 	}
 	execve(cmd_path, cmd_arg, envp);
-	exit(EXIT_FAILURE);
 }
 
 void	input_redirect(int *pipe_fd, char *file_name, char *cmd, char **envp)
