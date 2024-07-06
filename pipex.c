@@ -12,7 +12,8 @@
 
 #include "pipex.h"
 
-void	func(int *pipe_fd, int flag, char *argv, char **envp);
+void	setio(int infd, int outfd);
+void	func(int infd, int outfd, char *argv, char **envp);
 
 int	main(int argc, char **argv, char **envp)
 {
@@ -20,9 +21,6 @@ int	main(int argc, char **argv, char **envp)
 	int		fd;
 	pid_t	pid;
 	int		i;
-	int		flag;
-	char	**cmd_arg;
-	char	*cmd_path;
 
 	if (argc < 5)
 	{
@@ -34,71 +32,50 @@ int	main(int argc, char **argv, char **envp)
 		perror("pipe");
 		return (0);
 	}
-	flag = 0;
-
+	i = 0;
 	pid = fork();
 	if (pid == 0)
-		{
-		close(pipe_fd[flag]);
+	{
+		close(pipe_fd[0]);
 		fd = open(argv[1], O_RDONLY);
 		if (fd == -1)
 		{
 			perror(argv[1]);
 			exit(-1);
 		}
-		dup2(fd, 0);
-		dup2(pipe_fd[1 - flag], 1);
-		cmd_arg = cmd_args(argv[2]);
-		cmd_path = path(envp, cmd_arg[0]);
-		if (execve(cmd_path, cmd_arg, envp) == -1)
-		{
-			perror(cmd_path);
-			exit(-1);
-		}
+		func(fd, pipe_fd[1], argv[2], envp);
 	}
-
-	flag = 1 - flag;
-	i = 2;
-
-	while (argv[i + 3] != NULL)
+	i += 2;
+	while (i + 3 < argc)
 	{
 		pid = fork();
 		if (pid == 0)
-			func(pipe_fd, flag, argv[i], envp);
+			func(pipe_fd[0], pipe_fd[1], argv[i], envp);
 		i++;
-		flag = 1 - flag;
+		waitpid(pid, 0, 0);
 	}
-
 	pid = fork();
 	if (pid == 0)
 	{
-		close(pipe_fd[1 - flag]);
+		close(pipe_fd[1]);
 		fd = open(argv[i + 2], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (fd == -1)
 		{
 			perror(argv[i + 2]);
 			exit(-1);
 		}
-		dup2(pipe_fd[flag], 0);
-		dup2(fd, 1);
-		cmd_arg = cmd_args(argv[i + 1]);
-		cmd_path = path(envp, cmd_arg[0]);
-		if (execve(cmd_path, cmd_arg, envp) == -1)
-		{
-			perror(cmd_path);
-			exit(-1);
-		}
+		func(pipe_fd[0], fd, argv[i + 1], envp);
 	}
 	return (0);
 }
 
-void	func(int *pipe_fd, int flag, char *argv, char **envp)
+void	func(int infd, int outfd, char *argv, char **envp)
 {
 	char	**cmd_arg;
 	char	*cmd_path;
 
-	dup2(pipe_fd[flag], 0);
-	dup2(pipe_fd[1 - flag], 1);
+	ft_printf("FUNC CALL!\n");
+	setio(infd, outfd);
 	cmd_arg = cmd_args(argv);
 	cmd_path = path(envp, cmd_arg[0]);
 	if (execve(cmd_path, cmd_arg, envp) == -1)
@@ -106,4 +83,11 @@ void	func(int *pipe_fd, int flag, char *argv, char **envp)
 		perror(cmd_path);
 		exit(-1);
 	}
+	exit(1);
+}
+
+void	setio(int infd, int outfd)
+{
+	dup2(infd, 0);
+	dup2(outfd, 1);
 }
