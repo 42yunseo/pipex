@@ -10,32 +10,60 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "pipex_bonus.h"
 
 void	setio(int infd, int outfd);
 void	func(int infd, int outfd, char *argv, char **envp);
-void	input_redirect(int *pipe_fd, char *file_name, char *cmd, char **envp);
-void	output_redirect(int *pipe_fd, char *file_name, char *cmd, char **envp);
 
 int	main(int argc, char **argv, char **envp)
 {
 	int		pipe_fd[2];
 	int		fd;
 	pid_t	pid;
+	int		i;
 
 	if (argc < 5)
 		exit(1);
+	
 	if (pipe(pipe_fd) == -1)
 	{
 		perror("pipe");
 		return (0);
 	}
+	i = 0;
 	pid = fork();
 	if (pid == 0)
-		input_redirect(pipe_fd, argv[1], argv[2], envp);
+	{
+		close(pipe_fd[0]);
+		fd = open(argv[1], O_RDONLY);
+		if (fd == -1)
+		{
+			perror(argv[1]);
+			exit(-1);
+		}
+		func(fd, pipe_fd[1], argv[2], envp);
+	}
+	i += 2;
+	while (i + 3 < argc)
+	{
+		pid = fork();
+		if (pid == 0)
+			func(pipe_fd[0], pipe_fd[1], argv[i], envp);
+		i++;
+		waitpid(pid, 0, 0);
+	}
 	pid = fork();
 	if (pid == 0)
-		output_redirect(pipe_fd, argv[4], argv[3], envp);
+	{
+		close(pipe_fd[1]);
+		fd = open(argv[i + 2], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		if (fd == -1)
+		{
+			perror(argv[i + 2]);
+			exit(-1);
+		}
+		func(pipe_fd[0], fd, argv[i + 1], envp);
+	}
 	return (0);
 }
 
@@ -50,7 +78,7 @@ void	func(int infd, int outfd, char *argv, char **envp)
 	if (execve(cmd_path, cmd_arg, envp) == -1)
 	{
 		perror(cmd_path);
-		exit(1);
+		exit(-1);
 	}
 	exit(1);
 }
@@ -59,32 +87,4 @@ void	setio(int infd, int outfd)
 {
 	dup2(infd, 0);
 	dup2(outfd, 1);
-}
-
-void	input_redirect(int *pipe_fd, char *file_name, char *cmd, char **envp)
-{
-	int	fd;
-
-	close(pipe_fd[0]);
-	fd = open(file_name, O_RDONLY);
-	if (fd == -1)
-	{
-		perror(file_name);
-		exit(1);
-	}
-	func(fd, pipe_fd[1], cmd, envp);
-}
-
-void	output_redirect(int *pipe_fd, char *file_name, char *cmd, char **envp)
-{
-	int	fd;
-
-	close(pipe_fd[1]);
-	fd = open(file_name, O_RDWR | O_CREAT | O_TRUNC, 0644);
-	if (fd == -1)
-	{
-		perror(file_name);
-		exit(1);
-	}
-	func(pipe_fd[0], fd, cmd, envp);
 }

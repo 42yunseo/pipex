@@ -18,6 +18,10 @@ SRCS = pipex.c \
 		path.c \
 		cmd.c
 
+SRCS = pipex_bonus.c \
+		path_bonus.c \
+		cmd_bonus.c
+
 LIBFT_DIR = ./Libft/
 LIBFT = ./Libft/Libft.a
 LIBFT_HEADER = ./Libft/libft_all.h
@@ -41,5 +45,7 @@ fclean : clean
 	rm -f ${NAME}
 
 re : fclean all
+
+bonus : ${NAME}
 
 .PHONY : all clean fclean re bonus
