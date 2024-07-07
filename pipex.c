@@ -26,15 +26,13 @@ int	main(int argc, char **argv, char **envp)
 	if (pipe(pipe_fd) == -1)
 	{
 		perror("pipe");
-		return (0);
+		exit(EXIT_FAILURE);
 	}
 	pid = fork();
 	if (pid == 0)
 		input_redirect(pipe_fd, argv[1], argv[2], envp);
 	else
-	{
 		output_redirect(pipe_fd, argv[4], argv[3], envp);
-	}
 	return (0);
 }
 
