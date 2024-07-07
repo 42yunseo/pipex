@@ -1,0 +1,3 @@
+[submodule "pipexMedic"]
+	path = pipexMedic
+	url = https://github.com/gmarcha/pipexMedic.git

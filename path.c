@@ -73,8 +73,8 @@ char	*path(char **envp, char *cmd)
 
 	env_path = find_env_path(envp);
 	env_paths = ft_split(env_path, ':');
-	free(env_path);
 	cmd_path = find_cmd_path(env_paths, cmd);
+	free(env_path);
 	free_args(env_paths);
 	if (cmd_path != NULL)
 		return (cmd_path);
