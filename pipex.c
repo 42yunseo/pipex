@@ -14,11 +14,12 @@
 
 void	exec(int infd, int outfd, char *cmd, char **envp);
 void	input_redirect(int *pipe_fd, char *file_name, char *cmd, char **envp);
-void	output_redirect(int *pipe_fd, char *file_name, char *cmd, char **envp);
+int		output_redirect(int *pipe_fd, char *file_name, char *cmd, char **envp);
 
 int	main(int argc, char **argv, char **envp)
 {
 	int		pipe_fd[2];
+	int		status;
 
 	if (argc < 5)
 		exit(EXIT_FAILURE);
@@ -28,10 +29,11 @@ int	main(int argc, char **argv, char **envp)
 		exit(EXIT_FAILURE);
 	}
 	input_redirect(pipe_fd, argv[1], argv[2], envp);
-	output_redirect(pipe_fd, argv[4], argv[3], envp);
+	status = output_redirect(pipe_fd, argv[4], argv[3], envp);
 	close(pipe_fd[0]);
 	close(pipe_fd[1]);
-	exit(EXIT_SUCCESS);
+	wait(&status);
+	exit(status);
 }
 
 void	exec(int infd, int outfd, char *cmd, char **envp)
@@ -68,13 +70,13 @@ void	input_redirect(int *pipe_fd, char *file_name, char *cmd, char **envp)
 			exit(EXIT_FAILURE);
 		exec(fd, pipe_fd[1], cmd, envp);
 	}
-	waitpid(pid, NULL, WNOHANG);
 }
 
-void	output_redirect(int *pipe_fd, char *file_name, char *cmd, char **envp)
+int	output_redirect(int *pipe_fd, char *file_name, char *cmd, char **envp)
 {
 	pid_t	pid;
 	int		fd;
+	int		status;
 
 	pid = fork();
 	if (pid == 0)
@@ -85,5 +87,6 @@ void	output_redirect(int *pipe_fd, char *file_name, char *cmd, char **envp)
 			exit(EXIT_FAILURE);
 		exec(pipe_fd[0], fd, cmd, envp);
 	}
-	waitpid(pid, NULL, WNOHANG);
+	wait(&status);
+	return (status);
 }
